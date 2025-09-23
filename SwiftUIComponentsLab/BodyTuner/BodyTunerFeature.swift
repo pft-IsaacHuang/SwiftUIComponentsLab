@@ -18,6 +18,24 @@ enum BodyTunerFeature: Int, CaseIterable {
         case .AutoHip: return "Auto Hip"
         }
     }
+
+    var isAutoFeature: Bool {
+        switch self {
+        case .Enhance, .AutoWaist, .AutoArm, .AutoShoulder, .AutoNeck, .AutoChest, .AutoLeg, .AutoWidth, .AutoHip:
+            return true
+        default:
+            return false
+        }
+    }
+
+    var canProtectHead: Bool {
+        switch self {
+        case .AutoWidth, .Enhance:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 

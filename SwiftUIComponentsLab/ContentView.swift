@@ -18,15 +18,6 @@ struct ContentView: View {
             Text("Selected: \(sliderValue)")
                 .font(.headline)
             
-            LevelSlider(
-                value: $sliderValue,
-                ticks: 4,
-                isEnabled: true,
-                onCommit: { newValue in
-                    print("Committed value: \(newValue)")
-                }
-            )
-            
             Spacer()
         }
         .padding()

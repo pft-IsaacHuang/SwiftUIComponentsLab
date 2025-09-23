@@ -11,6 +11,8 @@ import SwiftUI
     @objc func onDegreeChange(value: Float)
     @objc func onDegreeEnd(value: Float)
     @objc func onLevelSliderChanged(value: Int)
+    @objc func onBackgroundProtectToggled(isOn: Bool)
+    @objc func onProtectHeadToggled(isOn: Bool)
 }
 
 struct BodyTunerBottomView: View {
@@ -25,6 +27,7 @@ struct BodyTunerBottomView: View {
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 9 : 28) var degreeLabelWidth: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 12 : 12) var degreeLabelHeight: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 10 : 10) var sliderLabelGap: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 36 : 36) var toggleButtonGroupHeight: CGFloat
     
     init(viewModel: ViewModel = ViewModel()) {
         self.viewModel = viewModel
@@ -36,12 +39,41 @@ struct BodyTunerBottomView: View {
             VStack(alignment: .trailing, spacing: 0) {
                 Spacer()
                 if viewModel.showDegreeBar {
-                    DegreeControlBar()
+                    DegreeControlBar().disabled(viewModel.degreeControlBarInteractionDisabled || viewModel.interactionDisabled)
                 } else if viewModel.showAutoCleavageSlider {
-                    AutoCleavageSliderBar()
+                    AutoCleavageSliderBar().disabled(viewModel.interactionDisabled)
                 }
                 Color.clear
                     .frame(height: sliderBottomSpacing)
+                // Background Protect / Protect Head toggles
+                if viewModel.showProtectHeadToggle || viewModel.showBackgroundProtectToggle {
+                    HStack(alignment: .center) {
+                        if viewModel.showProtectHeadToggle {
+                            LabeledToggle(
+                                title: NSLocalizedString("Protect Head", comment: ""),
+                                isOn: Binding(get: { viewModel.protectHeadOn }, set: { newVal in
+                                    viewModel.protectHeadOn = newVal
+                                    viewModel.delegate?.onProtectHeadToggled(isOn: newVal)
+                                }),
+                                isDisabled: viewModel.interactionDisabled
+                            )
+                            .frame(maxWidth: .infinity)
+                        }
+                        if viewModel.showBackgroundProtectToggle {
+                            LabeledToggle(
+                                title: NSLocalizedString("BG Protect", comment: ""),
+                                isOn: Binding(get: { viewModel.backgroundProtectOn }, set: { newVal in
+                                    viewModel.backgroundProtectOn = newVal
+                                    viewModel.delegate?.onBackgroundProtectToggled(isOn: newVal)
+                                }),
+                                isDisabled: viewModel.interactionDisabled
+                            )
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: toggleButtonGroupHeight)
+                }
                 // Mode picker
                 ModePickerScrollView(
                     items: viewModel.modes.map { mode in
@@ -64,6 +96,7 @@ struct BodyTunerBottomView: View {
                     },
                     config: .default
                 )
+                .allowsHitTesting(!viewModel.isDegreeDragging || !viewModel.interactionDisabled)
                 // Button group (cancel | [undo, redo, bodySwitcher] | confirm)
                 ConfirmCancelBottomBar(
                     addtionalButtonList: {
@@ -93,7 +126,6 @@ struct BodyTunerBottomView: View {
                     }
                 )
             }
-            .opacity(viewModel.interactionDisabled ? 0.5 : 1.0)
         }
         .background(Color.black.opacity(0.09))
     }
@@ -127,7 +159,6 @@ extension BodyTunerBottomView {
                     midpointDotColor: .white
                 )
                 .frame(width: sliderWidth, height: max(sliderThumbDiameter, 24))
-                .disabled(viewModel.interactionDisabled)
                 Color.clear
                     .frame(width: sliderLabelGap, height: 1)
                 Text(viewModel.degreeLabel)
@@ -151,12 +182,12 @@ extension BodyTunerBottomView {
                             viewModel.onLevelSliderChanged(newVal)
                         }
                     }
-                    .onChange(of: viewModel.cleavageValue) { newVal in
+                    .onChange(of: viewModel.cleavageValue) { _, newVal in
                         if cleavageSliderVM.value != newVal {
                             cleavageSliderVM.value = newVal
                         }
                     }
-                    .onChange(of: viewModel.cleavageEnabled) { newVal in
+                    .onChange(of: viewModel.cleavageEnabled) { _, newVal in
                         if cleavageSliderVM.isEnabled != newVal {
                             cleavageSliderVM.isEnabled = newVal
                         }
@@ -186,6 +217,8 @@ extension BodyTunerBottomView {
         
         // Global
         @Published var interactionDisabled: Bool = false
+        @Published var degreeControlBarInteractionDisabled: Bool = false
+        @Published var isDegreeDragging: Bool = false
         
         // Tabs / feature selection
         @Published var selectedFeatureIndex: Int = 0
@@ -195,14 +228,16 @@ extension BodyTunerBottomView {
             guard selectedFeatureIndex >= 0, selectedFeatureIndex < modes.count else { return nil }
             return modes[selectedFeatureIndex]
         }
-        var showAutoCleavageSlider: Bool { currentMode?.feature == .AutoCleavage }
+        var showAutoCleavageSlider: Bool { currentMode?.feature == .AutoCleavage && !shouldHideCleavageSlider }
         var shouldShowUndoRedo: Bool { currentMode?.feature != .AutoCleavage }
-        var showDegreeBar: Bool { !showAutoCleavageSlider }
+        var showDegreeBar: Bool { currentMode?.feature != .AutoCleavage }
+        var showBackgroundProtectToggle: Bool { currentMode?.feature.isAutoFeature ?? false }
+        var showProtectHeadToggle: Bool { currentMode?.feature.canProtectHead ?? false }
         
         // Degree control
+        @Published var degreeValue: Float = 0
         var degreeMin: Float { currentMode?.minValue ?? 0 }
         var degreeMax: Float { currentMode?.maxValue ?? 1 }
-        @Published var degreeValue: Float = 0
         var degreeLabel: String {
             let displayValue = shouldShowNegative ? -degreeValue : degreeValue
             return Int(displayValue * 100.0).description
@@ -213,13 +248,18 @@ extension BodyTunerBottomView {
         // Cleavage slider
         @Published var cleavageValue: Int = 0
         @Published var cleavageEnabled: Bool = true
+        @Published var shouldHideCleavageSlider: Bool = false
         
         // Buttons
         @Published var undoEnabled: Bool = false
         @Published var redoEnabled: Bool = false
         @Published var doneEnabled: Bool = false
         @Published var bodySwitcherVisible: Bool = false
-        
+        // Background Protect
+        @Published var backgroundProtectOn: Bool = false
+        // Protect Head
+        @Published var protectHeadOn: Bool = false
+
         init() {}
         
         func premiumBadge(for type: BeautifyEditCellIconType) -> ModePickerPremiumBadge {
@@ -237,6 +277,7 @@ extension BodyTunerBottomView {
         
         // MARK: - Degree delegate passthrough (live update)
         func onDegreeBegin() {
+            isDegreeDragging = true
             delegate?.onDegreeBegin()
         }
         func onDegreeChange(_ val: CGFloat) {
@@ -250,6 +291,7 @@ extension BodyTunerBottomView {
             if v != 0 && !doneEnabled {
                 self.doneEnabled = true
             }
+            isDegreeDragging = false
             delegate?.onDegreeEnd(value: v)
         }
         func onLevelSliderChanged(_ value: Int) {
@@ -258,7 +300,6 @@ extension BodyTunerBottomView {
         }
     }
 }
-
 
 
 #if DEBUG
@@ -282,6 +323,8 @@ final class DemoDelegate: NSObject, BodyTunerBottomViewDelegate {
     func onDegreeChange(value: Float) { print(String(format: "[DemoDelegate] Degree Change: %.2f", value)) }
     func onDegreeEnd(value: Float) { print(String(format: "[DemoDelegate] Degree End: %.2f", value)) }
     func onLevelSliderChanged(value: Int) { print("[DemoDelegate] Level slider changed: \(value)") }
+    func onBackgroundProtectToggled(isOn: Bool) { print("[DemoDelegate] Background Protect toggled: \(isOn)") }
+    func onProtectHeadToggled(isOn: Bool) { print("[DemoDelegate] Protect Head toggled: \(isOn)") }
 }
 
 struct DemoContainer: View {
@@ -333,7 +376,7 @@ struct DemoContainer: View {
     
     var body: some View {
         BodyTunerBottomView(viewModel: vm)
-            .frame(height: 150)
+            .frame(height:200)
             .background(Color.gray)
             .previewLayout(.sizeThatFits)
             .onAppear {
