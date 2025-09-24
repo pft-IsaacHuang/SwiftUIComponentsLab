@@ -13,7 +13,7 @@ import UIKit
 struct FigmaTestBottomView: View {
     @State private var selectedFocus: OverallFocus = .overall
     @State private var bgProtectOn: Bool = true
-    @State private var intensityValue: CGFloat = 0
+    @State private var intensityValue: CGFloat = 50
     // Scaling helper to match 320/480 guideline
     private var isPad: Bool {
         #if canImport(UIKit)
@@ -93,17 +93,33 @@ struct FigmaTestBottomView: View {
                 let leftInset = width * (48.0/320.0) // approximate from figma
                 let rightInset = width * (34.0/320.0) // space for trailing label
                 let lineWidth = max(0, width - leftInset - rightInset)
+                let dotRange = lineWidth - intensityDot // Available range for dot movement
+                let normalizedValue = max(0, min(1, intensityValue / 100)) // Normalize 0-100 to 0-1
+                let dotOffset = normalizedValue * dotRange
+                
                 Capsule()
                     .fill(Color.white)
                     .frame(width: lineWidth, height: 1)
                     .offset(x: (leftInset - (width/2 - lineWidth/2)))
-                // Dot
+                
+                // Dot - now positioned based on intensityValue
                 Circle()
                     .fill(Color.white)
                     .frame(width: intensityDot, height: intensityDot)
-                    .offset(x: -width/2 + leftInset + intensityDot/2)
+                    .offset(x: -width/2 + leftInset + intensityDot/2 + dotOffset)
+                    .animation(.easeInOut(duration: 0.2), value: intensityValue)
             }
             .frame(height: max(18, intensityDot))
+            .contentShape(Rectangle())
+            .onTapGesture { location in
+                updateIntensityFromTap(location: location)
+            }
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        updateIntensityFromDrag(location: value.location)
+                    }
+            )
             
             HStack {
                 Spacer()
@@ -111,6 +127,40 @@ struct FigmaTestBottomView: View {
                     .foregroundStyle(.white)
                     .font(.system(size: tinyFont))
             }
+        }
+    }
+    
+    // MARK: - Intensity Helper Methods
+    
+    private func updateIntensityFromTap(location: CGPoint) {
+        updateIntensityValue(from: location)
+    }
+    
+    private func updateIntensityFromDrag(location: CGPoint) {
+        updateIntensityValue(from: location)
+    }
+    
+    private func updateIntensityValue(from location: CGPoint) {
+        // Get the geometry reader's width - this should match the container width
+        let width = containerWidth
+        let leftInset = width * (48.0/320.0)
+        let rightInset = width * (34.0/320.0)
+        let lineWidth = max(0, width - leftInset - rightInset)
+        let dotRange = lineWidth - intensityDot
+        
+        // Calculate the tap position relative to the start of the interactive area
+        let tapX = location.x
+        let relativeX = tapX - leftInset
+        
+        // Clamp the position within the valid range
+        let clampedX = max(0, min(dotRange, relativeX))
+        
+        // Convert to intensity value (0-100)
+        let normalizedPosition = dotRange > 0 ? clampedX / dotRange : 0
+        let newIntensity = normalizedPosition * 100
+        
+        withAnimation(.easeInOut(duration: 0.2)) {
+            intensityValue = newIntensity
         }
     }
     
