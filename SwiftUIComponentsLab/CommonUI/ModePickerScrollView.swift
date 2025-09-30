@@ -7,12 +7,7 @@ struct ButtonFramePreferenceKey: PreferenceKey {
     }
 }
 
-enum ModePickerPremiumBadge {
-    case none
-    case trial
-    case pro
-    case vip
-}
+import SwiftUI
 
 struct ModePickerScrollItem: Identifiable {
     let id: Int
@@ -21,7 +16,7 @@ struct ModePickerScrollItem: Identifiable {
     let isApplied: Bool
     let isNew: Bool
     let accessibilityId: String?
-    let premiumBadge: ModePickerPremiumBadge
+    let premiumBadge: PremiumBadge
 }
 
 struct ModePickerScrollConfig {
@@ -140,28 +135,9 @@ private struct ModePickerScrollCell: View {
                     .scaledToFit()
                     .foregroundColor(.white)
                     .frame(width: width * 0.7, height: width * 0.7)
-                switch item.premiumBadge {
-                case .trial:
-                    Image("ico_try_ios", bundle: nil)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: width * 0.35, height: width * 0.12)
-                        .offset(x: 0, y: -2)
-                case .pro:
-                    Image("ico_ycp_lobby_pro", bundle: nil)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: width * 0.35, height: width * 0.12)
-                        .offset(x: 0, y: -2)
-                case .vip:
-                    Image("ico_ycp_lobby_paiduser", bundle: nil)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: width * 0.35, height: width * 0.12)
-                        .offset(x: 0, y: -2)
-                case .none:
-                    EmptyView()
-                }
+                PremiumBadgeView(badge: item.premiumBadge)
+                    .frame(width: width * 0.35, height: width * 0.12)
+                    .offset(x: 0, y: -2)
                 if item.isNew {
                     Text("NEW")
                         .font(.system(size: titleFontSize * 0.9, weight: .semibold))

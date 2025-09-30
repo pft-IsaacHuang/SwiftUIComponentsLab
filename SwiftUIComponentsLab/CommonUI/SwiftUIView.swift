@@ -89,6 +89,7 @@ extension ConfirmCancelBottomBar {
         case regen
         case eraser
         case bodySwitcher
+        case manual
         
         var imageName: String {
             switch self {
@@ -110,6 +111,8 @@ extension ConfirmCancelBottomBar {
                 return "btn_3lv_eraser_new"
             case .bodySwitcher:
                 return "btn_3lv_bodytuner_swap"
+            case .manual:
+                return "btn_2lv_manual_shape"
             }
         }
         
@@ -133,6 +136,8 @@ extension ConfirmCancelBottomBar {
                 return "EraserButton"
             case .bodySwitcher:
                 return "BodySwitcherButton"
+            case .manual:
+                return "ManualButton"
             }
         }
     }

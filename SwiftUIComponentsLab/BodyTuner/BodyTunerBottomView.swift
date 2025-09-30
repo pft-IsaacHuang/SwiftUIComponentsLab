@@ -11,6 +11,8 @@ import SwiftUI
     @objc func onDegreeChange(value: Float)
     @objc func onDegreeEnd(value: Float)
     @objc func onLevelSliderChanged(value: Int)
+    @objc func onSmootherTargetChanged(channel: SmootherChannel)
+    func onManual()
     @objc func onBackgroundProtectToggled(isOn: Bool)
     @objc func onProtectHeadToggled(isOn: Bool)
 }
@@ -28,6 +30,10 @@ struct BodyTunerBottomView: View {
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 12 : 12) var degreeLabelHeight: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 10 : 10) var sliderLabelGap: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 36 : 36) var toggleButtonGroupHeight: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 112 : 110) var smootherSwitchWidth: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 274 : 140) var smootherSliderWidth: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 19 : 16) var smootherSwitchSliderGap: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 10 : 10) var smootherPadding: CGFloat
     
     init(viewModel: ViewModel = ViewModel()) {
         self.viewModel = viewModel
@@ -38,7 +44,9 @@ struct BodyTunerBottomView: View {
             Color.clear
             VStack(alignment: .trailing, spacing: 0) {
                 Spacer()
-                if viewModel.showDegreeBar {
+                if viewModel.showSmootherBar {
+                    SmootherControlBar().disabled(viewModel.interactionDisabled)
+                } else if viewModel.showDegreeBar {
                     DegreeControlBar().disabled(viewModel.degreeControlBarInteractionDisabled || viewModel.interactionDisabled)
                 } else if viewModel.showAutoCleavageSlider {
                     AutoCleavageSliderBar().disabled(viewModel.interactionDisabled)
@@ -103,6 +111,7 @@ struct BodyTunerBottomView: View {
                         var list: [ConfirmCancelBottomBar.ActionType] = []
                         if viewModel.shouldShowUndoRedo{ list += [.undo, .redo] }
                         if viewModel.bodySwitcherVisible { list += [.bodySwitcher] }
+                        if viewModel.manualVisible { list += [.manual] }
                         return list
                     }(),
                     isOnlyCancelButtonInteractive: viewModel.interactionDisabled,
@@ -121,6 +130,7 @@ struct BodyTunerBottomView: View {
                         case .undo: viewModel.delegate?.onUndo()
                         case .redo: viewModel.delegate?.onRedo()
                         case .bodySwitcher: viewModel.delegate?.onBodySwitcherTap()
+                        case .manual: viewModel.delegate?.onManual()
                         default: break
                         }
                     }
@@ -182,12 +192,12 @@ extension BodyTunerBottomView {
                             viewModel.onLevelSliderChanged(newVal)
                         }
                     }
-                    .onChange(of: viewModel.cleavageValue) { _, newVal in
+                    .onChange(of: viewModel.cleavageValue) { newVal in
                         if cleavageSliderVM.value != newVal {
                             cleavageSliderVM.value = newVal
                         }
                     }
-                    .onChange(of: viewModel.cleavageEnabled) { _, newVal in
+                    .onChange(of: viewModel.cleavageEnabled) { newVal in
                         if cleavageSliderVM.isEnabled != newVal {
                             cleavageSliderVM.isEnabled = newVal
                         }
@@ -197,6 +207,62 @@ extension BodyTunerBottomView {
             .frame(maxWidth: .infinity)
         }
     }
+    @ViewBuilder
+    func SmootherControlBar() -> some View {
+        let premiumBadgeWidth = GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 20 : 21).wrappedValue
+        let premiumBadgeHeight = GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 9 : 9).wrappedValue
+        VStack(spacing: degreeLabelTopSpacing) {
+            HStack(alignment: .center, spacing: 0) {
+                ZStack(alignment: .topTrailing) {
+                    PillSegmentedControl(
+                        leftTitle: NSLocalizedString("Face", comment: ""),
+                        rightTitle: NSLocalizedString("Body", comment: ""),
+                        selection: Binding(get: {
+                            viewModel.smootherTarget == .face ? 0 : 1
+                        }, set: { newVal in
+                            viewModel.smootherTarget = (newVal == 0) ? .face : .body
+                            viewModel.delegate?.onSmootherTargetChanged(channel: viewModel.smootherTarget)
+                        })
+                    )
+                    PremiumBadgeView(badge: viewModel.currentPremiumBadge)
+                        .frame(width: premiumBadgeWidth, height: premiumBadgeHeight)
+                        .offset(x: 9, y: -2)
+                }
+                .frame(width: smootherSwitchWidth)
+                Color.clear
+                    .frame(width: smootherSwitchSliderGap, height: 1)
+                CustomSlider(
+                    value: Binding(get: { CGFloat(viewModel.degreeValue) }, set: { newVal in
+                        viewModel.onDegreeChange(CGFloat(newVal))
+                    }),
+                    range: CGFloat(0)...CGFloat(1),
+                    trackHeight: sliderTrackHeight,
+                    thumbDiameter: sliderThumbDiameter,
+                    unfilledTrackColor: LinearGradient(colors: [.white], startPoint: .leading, endPoint: .trailing),
+                    enableSnappingMiddle: false,
+                    snappingThresholdPercentage: 0.0,
+                    onBegin: { _ in viewModel.onDegreeBegin() },
+                    onChanged: { val in viewModel.onDegreeChange(val) },
+                    onEnded: { val in viewModel.onDegreeEnd(val) },
+                    fillFromMidpoint: false,
+                    midpointValue: 0,
+                    showMidpointDot: false,
+                    midpointDotDiameter: 0,
+                    midpointDotColor: .clear
+                )
+                .frame(width: smootherSliderWidth, height: max(sliderThumbDiameter, 24))
+                Color.clear
+                    .frame(width: sliderLabelGap, height: 1)
+                Text(viewModel.degreeLabel)
+                    .foregroundStyle(.white)
+                    .font(.system(size: degreeLabelHeight, weight: .medium))
+                    .frame(width: degreeLabelWidth, height: degreeLabelHeight, alignment: .leading)
+            }
+            .padding(.horizontal, smootherPadding)
+            .frame(maxWidth: .infinity)
+        }
+    }
+    
     class ViewModel: ObservableObject {
         struct BodyTunerMode: Identifiable {
             let id: Int
@@ -209,8 +275,6 @@ extension BodyTunerBottomView {
             let iconType: BeautifyEditCellIconType
             var isApplied: Bool
             var isNew: Bool
-            var shouldShowNegative: Bool { feature == .AutoNeck }
-            var shouldShowMiddleDot: Bool { feature != .AutoNeck }
         }
         
         weak var delegate: BodyTunerBottomViewDelegate?
@@ -228,11 +292,17 @@ extension BodyTunerBottomView {
             guard selectedFeatureIndex >= 0, selectedFeatureIndex < modes.count else { return nil }
             return modes[selectedFeatureIndex]
         }
-        var showAutoCleavageSlider: Bool { currentMode?.feature == .AutoCleavage && !shouldHideCleavageSlider }
-        var shouldShowUndoRedo: Bool { currentMode?.feature != .AutoCleavage }
-        var showDegreeBar: Bool { currentMode?.feature != .AutoCleavage }
-        var showBackgroundProtectToggle: Bool { currentMode?.feature.isAutoFeature ?? false }
-        var showProtectHeadToggle: Bool { currentMode?.feature.canProtectHead ?? false }
+        var currentFeature: BodyTunerFeature { currentMode?.feature ?? .Enhance }
+        var showAutoCleavageSlider: Bool { currentFeature == .AutoCleavage && !shouldHideCleavageSlider }
+        var shouldShowUndoRedo: Bool { currentFeature != .AutoCleavage }
+        var showSmootherBar: Bool { currentFeature == .AutoSmoother }
+        var showDegreeBar: Bool { currentFeature.useDegreeControlBar }
+        var showBackgroundProtectToggle: Bool { currentFeature.isAutoFeature && currentFeature != .AutoSmoother }
+        var showProtectHeadToggle: Bool { currentFeature.canProtectHead }
+        var currentPremiumBadge: PremiumBadge {
+            guard let mode = currentMode else { return .none }
+            return premiumBadge(for: mode.iconType)
+        }
         
         // Degree control
         @Published var degreeValue: Float = 0
@@ -242,8 +312,11 @@ extension BodyTunerBottomView {
             let displayValue = shouldShowNegative ? -degreeValue : degreeValue
             return Int(displayValue * 100.0).description
         }
-        var shouldShowNegative: Bool { currentMode?.shouldShowNegative ?? false }
-        var showMiddleDot: Bool { currentMode?.shouldShowMiddleDot ?? true }
+        // Smoother control
+        @Published var smootherTarget: SmootherChannel = .body
+        
+        var shouldShowNegative: Bool { currentFeature.showNegativeValueOnLabel }
+        var showMiddleDot: Bool { currentFeature.showMiddleDot }
         
         // Cleavage slider
         @Published var cleavageValue: Int = 0
@@ -255,14 +328,15 @@ extension BodyTunerBottomView {
         @Published var redoEnabled: Bool = false
         @Published var doneEnabled: Bool = false
         @Published var bodySwitcherVisible: Bool = false
+        @Published var manualVisible: Bool = true
         // Background Protect
         @Published var backgroundProtectOn: Bool = false
         // Protect Head
-        @Published var protectHeadOn: Bool = false
-
+        @Published var protectHeadOn: Bool = true
+        
         init() {}
         
-        func premiumBadge(for type: BeautifyEditCellIconType) -> ModePickerPremiumBadge {
+        func premiumBadge(for type: BeautifyEditCellIconType) -> PremiumBadge {
             switch type {
             case .try:
                 return .trial
@@ -300,92 +374,3 @@ extension BodyTunerBottomView {
         }
     }
 }
-
-
-#if DEBUG
-struct BodyTunerBottomView_Previews: PreviewProvider {
-    static var previews: some View {
-        DemoContainer()
-    }
-}
-#endif
-
-// MARK: - Demo Delegate + Seeded Preview Container
-#if DEBUG
-final class DemoDelegate: NSObject, BodyTunerBottomViewDelegate {
-    func onCancel() { print("[DemoDelegate] Cancel") }
-    func onDone() { print("[DemoDelegate] Done") }
-    func onUndo() { print("[DemoDelegate] Undo") }
-    func onRedo() { print("[DemoDelegate] Redo") }
-    func onBodySwitcherTap() { print("[DemoDelegate] Body Switcher Tap") }
-    func onTabSelected(index: Int) { print("[DemoDelegate] Tab Selected: \(index)") }
-    func onDegreeBegin() { print("[DemoDelegate] Degree Begin") }
-    func onDegreeChange(value: Float) { print(String(format: "[DemoDelegate] Degree Change: %.2f", value)) }
-    func onDegreeEnd(value: Float) { print(String(format: "[DemoDelegate] Degree End: %.2f", value)) }
-    func onLevelSliderChanged(value: Int) { print("[DemoDelegate] Level slider changed: \(value)") }
-    func onBackgroundProtectToggled(isOn: Bool) { print("[DemoDelegate] Background Protect toggled: \(isOn)") }
-    func onProtectHeadToggled(isOn: Bool) { print("[DemoDelegate] Protect Head toggled: \(isOn)") }
-}
-
-struct DemoContainer: View {
-    @StateObject private var vm: BodyTunerBottomView.ViewModel
-    private let delegate = DemoDelegate()
-    
-    init() {
-        // Seed modes for all features
-        func iconName(for feature: BodyTunerFeature) -> String {
-            switch feature {
-            case .Enhance: return "bolt.circle"
-            case .Waist: return "figure.stand"
-            case .AutoWaist: return "figure.stand"
-            case .AutoArm: return "hand.raised"
-            case .AutoShoulder: return "person"
-            case .AutoNeck: return "person.crop.circle"
-            case .AutoChest: return "heart.circle"
-            case .AutoCleavage: return "heart.circle"
-            case .AutoLeg: return "figure.walk"
-            case .AutoWidth: return "arrow.left.and.right.circle"
-            case .AutoHip: return "figure.stand"
-            }
-        }
-        let modes: [BodyTunerBottomView.ViewModel.BodyTunerMode] = BodyTunerFeature.allCases.enumerated().map { (idx, feature) in
-                .init(
-                    id: idx,
-                    title: feature.description(),
-                    iconName: iconName(for: feature),
-                    feature: feature,
-                    minValue: -1,
-                    maxValue: 1,
-                    defaultValue: 0,
-                    iconType: .VIP,
-                    isApplied: false,
-                    isNew: false
-                )
-        }
-        let seeded = BodyTunerBottomView.ViewModel()
-        seeded.delegate = delegate
-        seeded.modes = modes
-        seeded.selectedFeatureIndex = 0
-        seeded.degreeValue = 0
-        seeded.undoEnabled = true
-        seeded.redoEnabled = false
-        seeded.doneEnabled = true
-        seeded.bodySwitcherVisible = true
-        _vm = StateObject(wrappedValue: seeded)
-    }
-    
-    var body: some View {
-        BodyTunerBottomView(viewModel: vm)
-            .frame(height:200)
-            .background(Color.gray)
-            .previewLayout(.sizeThatFits)
-            .onAppear {
-                // Simulate delayed toggle to see UI reactivity
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    vm.selectedFeatureIndex = 0
-                    vm.degreeValue = 0.5
-                }
-            }
-    }
-}
-#endif

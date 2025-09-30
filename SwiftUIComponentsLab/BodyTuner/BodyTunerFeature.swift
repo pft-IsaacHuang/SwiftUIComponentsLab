@@ -1,40 +1,50 @@
 import Foundation
 
+@objc public enum SmootherChannel: Int { case body, face }
+
 enum BodyTunerFeature: Int, CaseIterable {
-    case Enhance, Waist, AutoWaist, AutoArm, AutoShoulder, AutoNeck, AutoChest, AutoCleavage, AutoLeg, AutoWidth, AutoHip
+    case AutoSmoother, Enhance, Waist, AutoWaist, AutoArm, AutoShoulder, AutoNeck, AutoChest, AutoCleavage, AutoLeg, AutoWidth, AutoHip, AutoBelly 
 
     func description() -> String {
         switch self {
         case .Enhance: return "Enhance"
-        case .Waist: return "Waist"
-        case .AutoWaist: return "Auto Waist"
-        case .AutoArm: return "Auto Arm"
-        case .AutoShoulder: return "Auto Shoulder"
-        case .AutoNeck: return "Auto Neck"
-        case .AutoChest: return "Auto Chest"
+        case .Waist: return "Slim"
+        case .AutoWaist: return "Waist"
+        case .AutoArm: return "Arm"
+        case .AutoShoulder: return "Shoulder"
+        case .AutoNeck: return "Neck"
+        case .AutoChest: return "Chest"
         case .AutoCleavage: return "AI Chest"
-        case .AutoLeg: return "Auto Leg"
-        case .AutoWidth: return "Auto Width"
-        case .AutoHip: return "Auto Hip"
+        case .AutoLeg: return "Leg"
+        case .AutoWidth: return "Width"
+        case .AutoHip: return "Hip"
+        case .AutoBelly: return "Belly"
+        case .AutoSmoother: return "Smoother"
         }
     }
 
     var isAutoFeature: Bool {
-        switch self {
-        case .Enhance, .AutoWaist, .AutoArm, .AutoShoulder, .AutoNeck, .AutoChest, .AutoLeg, .AutoWidth, .AutoHip:
-            return true
-        default:
-            return false
-        }
+        return self == .AutoWaist || self == .AutoLeg || self == .AutoArm || self == .AutoWidth || self == .AutoShoulder || self == .AutoNeck || self == .AutoChest || self == .AutoBelly || self == .AutoHip || self == .AutoSmoother
     }
 
     var canProtectHead: Bool {
-        switch self {
-        case .AutoWidth, .Enhance:
-            return true
-        default:
-            return false
-        }
+        return self == .AutoWidth
+    }
+
+    var useDegreeControlBar: Bool {
+        return self == .Enhance || self == .Waist || self == .AutoWaist || self == .AutoLeg || self == .AutoArm || self == .AutoWidth || self == .AutoShoulder || self == .AutoNeck || self == .AutoChest || self == .AutoBelly || self == .AutoHip
+    }
+
+    var showMiddleDot: Bool {
+        return self == .Enhance || self == .Waist || self == .AutoWaist || self == .AutoLeg || self == .AutoArm || self == .AutoWidth || self == .AutoShoulder || self == .AutoChest || self == .AutoBelly || self == .AutoHip 
+    }
+
+    var showNegativeValueOnLabel:Bool {
+        return self == .AutoNeck
+    }
+
+    var supportsOrientation: Bool {
+        return self == .AutoArm || self == .AutoLeg || self == .AutoShoulder || self == .AutoNeck || self == .AutoChest
     }
 }
 
