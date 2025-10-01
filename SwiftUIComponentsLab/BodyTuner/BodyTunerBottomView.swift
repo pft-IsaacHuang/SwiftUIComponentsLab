@@ -135,6 +135,41 @@ struct BodyTunerBottomView: View {
                         }
                     }
                 )
+                .overlayPreferenceValue(BodySwitcherAnchorKey.self) { anchor in
+                    GeometryReader { proxy in
+                        ZStack(alignment: .topLeading) {
+                            if viewModel.bodySwitcherHintVisible, let anchor = anchor {
+                                let rect = proxy[anchor]
+                                TipBubble(
+                                    message: NSLocalizedString("Tap here to switch body", comment: ""),
+                                    multilineTextAlignment: .center,
+                                    cornerRadius: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 6 : 6).wrappedValue,
+                                    tailOffsetX: 0,
+                                    bubbleFillColor: UIColor(red: 0x0d/255.0, green: 0xc2/255.0, blue: 0x83/255.0, alpha: 1.0),
+                                    textColor: .white,
+                                    showGradientBorder: false,
+                                    tailPosition: .bottom,
+                                    fontWeight: .semibold
+                                )
+                                .fixedSize()
+                                .accessibilityIdentifier("BodySwitcherHint")
+                                .transition(.opacity)
+                                .position(x: rect.midX, y: -12)
+                            }
+                        }
+                    }
+                }
+                .onChange(of: viewModel.bodySwitcherHintVisible) { isVisible in
+                    if isVisible {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            if viewModel.bodySwitcherHintVisible {
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    viewModel.bodySwitcherHintVisible = false
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         .background(Color.black.opacity(0.09))
@@ -328,6 +363,7 @@ extension BodyTunerBottomView {
         @Published var redoEnabled: Bool = false
         @Published var doneEnabled: Bool = false
         @Published var bodySwitcherVisible: Bool = false
+        @Published var bodySwitcherHintVisible: Bool = false
         @Published var manualVisible: Bool = true
         // Background Protect
         @Published var backgroundProtectOn: Bool = false

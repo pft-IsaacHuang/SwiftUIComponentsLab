@@ -69,7 +69,7 @@ struct DemoContainer: View {
         seeded.undoEnabled = true
         seeded.redoEnabled = false
         seeded.doneEnabled = true
-        seeded.bodySwitcherVisible = true
+        seeded.bodySwitcherVisible = false
         _vm = StateObject(wrappedValue: seeded)
     }
     
@@ -83,6 +83,13 @@ struct DemoContainer: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     vm.selectedFeatureIndex = 0
                     vm.degreeValue = 0.5
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                    vm.bodySwitcherVisible = true
+                    vm.bodySwitcherHintVisible = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 9.0) {
+                    vm.bodySwitcherHintVisible = false
                 }
             }
     }

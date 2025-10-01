@@ -61,3 +61,88 @@ private func colorValueFromHex(_ hex: String) -> (CGFloat, CGFloat, CGFloat, CGF
         return (0, 0, 0, 0)
     }
 }
+
+extension UIColor {
+    @objc public convenience init(hex: String, isAlpha: Bool) {
+        if hex == "clear" || hex == "color_picker" {
+            self.init(white: 0, alpha: 0)
+            return
+        }
+        if hex.hasPrefix("#") {
+            let start = hex.index(hex.startIndex, offsetBy: 1)
+            let hexColor = String(hex[start...])
+            if hexColor.count == 8 {
+                let scanner = Scanner(string: hexColor)
+                var hexNumber: UInt64 = 0
+                
+                if scanner.scanHexInt64(&hexNumber) {
+                    let a = CGFloat((hexNumber & 0xff000000) >> 24) / 255
+                    let r = CGFloat((hexNumber & 0x00ff0000) >> 16) / 255
+                    let g = CGFloat((hexNumber & 0x0000ff00) >> 8) / 255
+                    let b = CGFloat(hexNumber & 0x000000ff) / 255
+                    
+                    self.init(red: r, green: g, blue: b, alpha:isAlpha ? a : 1)
+                    return
+                }
+            } else if hexColor.count == 6 {
+                let scanner = Scanner(string: hexColor)
+                var hexNumber: UInt64 = 0
+                scanner.scanHexInt64(&hexNumber)
+                let r = CGFloat((hexNumber & 0xff0000) >> 16) / 255
+                let g = CGFloat((hexNumber & 0x00ff00) >> 8) / 255
+                let b = CGFloat(hexNumber & 0x0000ff) / 255
+                
+                self.init(red: r, green: g, blue: b, alpha: 1.0)
+                return
+            }
+        } else {
+            if hex.count == 8 {
+                let scanner = Scanner(string: hex)
+                var hexNumber: UInt64 = 0
+                
+                if scanner.scanHexInt64(&hexNumber) {
+                    let a = CGFloat((hexNumber & 0xff000000) >> 24) / 255
+                    let r = CGFloat((hexNumber & 0x00ff0000) >> 16) / 255
+                    let g = CGFloat((hexNumber & 0x0000ff00) >> 8) / 255
+                    let b = CGFloat(hexNumber & 0x000000ff) / 255
+                    
+                    self.init(red: r, green: g, blue: b, alpha: isAlpha ? a : 1)
+                    return
+                }
+            } else if hex.count == 6 {
+                let scanner = Scanner(string: hex)
+                scanner.scanLocation = 0
+                
+                var rgbValue: UInt64 = 0
+                
+                scanner.scanHexInt64(&rgbValue)
+                
+                let r = (rgbValue & 0xff0000) >> 16
+                let g = (rgbValue & 0xff00) >> 8
+                let b = rgbValue & 0xff
+                
+                self.init(
+                    red: CGFloat(r) / 0xff,
+                    green: CGFloat(g) / 0xff,
+                    blue: CGFloat(b) / 0xff, alpha: 1
+                )
+                return
+            }
+        }
+        self.init(
+            red: 0,
+            green: 0,
+            blue: 0, alpha: 1
+        )
+    }
+    
+    @objc public convenience init(hex: String) {
+        self.init(hex: hex, isAlpha: true)
+    }
+    
+    public convenience init(r: Int, g: Int, b: Int, a: Int) {
+        self.init(red: CGFloat(r) / 255.0, green: CGFloat(g) / 255.0, blue: CGFloat(b) / 255.0, alpha: CGFloat(a) / 255.0)
+        return
+    }
+
+}

@@ -73,6 +73,9 @@ struct ConfirmCancelBottomBar: View {
         .accessibilityIdentifier(type.accessibilityIdentifier)
         .disabled(self.isActionButtonDisabled(type))
         .allowsHitTesting(!self.isOnlyCancelButtonInteractive || type == .cancel)
+        .anchorPreference(key: BodySwitcherAnchorKey.self, value: .bounds, transform: { anchor in
+            return type == .bodySwitcher ? anchor : nil
+        })
     }
 }
 
@@ -139,6 +142,16 @@ extension ConfirmCancelBottomBar {
             case .manual:
                 return "ManualButton"
             }
+        }
+    }
+}
+
+// Anchor-based preference for precise local alignment
+struct BodySwitcherAnchorKey: PreferenceKey {
+    static var defaultValue: Anchor<CGRect>? = nil
+    static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
+        if let next = nextValue() {
+            value = next
         }
     }
 }
