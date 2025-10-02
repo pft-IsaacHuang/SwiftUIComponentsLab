@@ -58,7 +58,7 @@ struct DemoContainer: View {
                     maxValue: 1,
                     defaultValue: 0,
                     iconType: .pro,
-                    isApplied: false,
+                    isApplied: true,
                     isNew: false
                 )
         }

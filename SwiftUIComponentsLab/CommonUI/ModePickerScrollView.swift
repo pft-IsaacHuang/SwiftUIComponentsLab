@@ -126,11 +126,13 @@ struct ModePickerScrollView: View {
 
 private struct ModePickerScrollCell: View {
 
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 16 : 10) var premiumBadgeOffsetX: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 16 : 11) var premiumBadgeOffsetX: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 0 : -3) var premiumBadgeOffsetY: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 6 : 6) var newBadgeOffsetX: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? -4 : -2) var newBadgeOffsetY: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 12 : 11) var newBadgeWidth: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? -1 : -2) var appliedDotOffsetY: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 3 : 3) var appliedDotSize: CGFloat
 
     let item: ModePickerScrollItem
     let width: CGFloat
@@ -157,12 +159,13 @@ private struct ModePickerScrollCell: View {
                         .frame(width: newBadgeWidth)
                         .offset(x: newBadgeOffsetX, y: newBadgeOffsetY)
                 }
-                
+            }
+            .overlay(alignment: .top) {
                 if item.isApplied {
                     Circle()
                         .fill(Color.white)
-                        .frame(width: 4, height: 4)
-                        .offset(x: -width * 0.35, y: 2)
+                        .frame(width: appliedDotSize, height: appliedDotSize)
+                        .padding(.top, appliedDotOffsetY)
                 }
             }
             Text(item.title)
