@@ -12,7 +12,7 @@ import SwiftUI
 /// - selection: 0 selects the left option, 1 selects the right option.
 struct PillSegmentedControl: View {
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 16 : 20) var height: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 10 : 10) var fontSize: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 14 : 10) var fontSize: CGFloat
 
     let leftTitle: String
     let rightTitle: String

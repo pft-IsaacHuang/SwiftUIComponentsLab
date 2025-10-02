@@ -25,6 +25,7 @@ final class DemoDelegate: NSObject, BodyTunerBottomViewDelegate {
 }
 
 struct DemoContainer: View {
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 175 : 174) var height: CGFloat
     @StateObject private var vm: BodyTunerBottomView.ViewModel
     private let delegate = DemoDelegate()
     
@@ -56,7 +57,7 @@ struct DemoContainer: View {
                     minValue: -1,
                     maxValue: 1,
                     defaultValue: 0,
-                    iconType: .VIP,
+                    iconType: .pro,
                     isApplied: false,
                     isNew: false
                 )
@@ -75,7 +76,7 @@ struct DemoContainer: View {
     
     var body: some View {
         BodyTunerBottomView(viewModel: vm)
-            .frame(height:200)
+            .frame(height:height)
             .background(Color.gray)
             .previewLayout(.sizeThatFits)
             .onAppear {
@@ -99,8 +100,4 @@ struct BodyTunerDemo: View {
     var body: some View {
         DemoContainer()
     }
-}
-
-#Preview {
-    BodyTunerDemo()
-}
+}   

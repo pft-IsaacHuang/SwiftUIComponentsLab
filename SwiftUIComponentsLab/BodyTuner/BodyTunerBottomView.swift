@@ -21,19 +21,20 @@ struct BodyTunerBottomView: View {
     @ObservedObject var viewModel: ViewModel
     @StateObject private var cleavageSliderVM = LevelSlider.ViewModel(ticks: 4)
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 1 : 1) var sliderTrackHeight: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 11 : 16) var sliderThumbDiameter: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 6 : 6) var middleDotSize: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 6 : 6) var degreeLabelTopSpacing: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 10 : 16) var sliderThumbDiameter: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 4 : 4) var middleDotSize: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 286 : 208) var sliderWidth: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 6 : 6) var sliderBottomSpacing: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 9 : 28) var degreeLabelWidth: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 12 : 12) var degreeLabelHeight: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 10 : 10) var sliderLabelGap: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 36 : 36) var toggleButtonGroupHeight: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 6 : 6) var degreeControlBarBottomSpacing: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 20: 28) var degreeLabelWidth: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 8 : 12) var degreeLabelHeight: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 5 : 10) var sliderLabelGap: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 28 : 36) var toggleButtonGroupHeight: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 112 : 110) var smootherSwitchWidth: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 274 : 140) var smootherSliderWidth: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 19 : 16) var smootherSwitchSliderGap: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 10 : 10) var smootherPadding: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 35 : 40) var smootherControlBarHeight: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 36 : 42) var cleavageSliderBarHeight: CGFloat
     
     init(viewModel: ViewModel = ViewModel()) {
         self.viewModel = viewModel
@@ -51,8 +52,6 @@ struct BodyTunerBottomView: View {
                 } else if viewModel.showAutoCleavageSlider {
                     AutoCleavageSliderBar().disabled(viewModel.interactionDisabled)
                 }
-                Color.clear
-                    .frame(height: sliderBottomSpacing)
                 // Background Protect / Protect Head toggles
                 if viewModel.showProtectHeadToggle || viewModel.showBackgroundProtectToggle {
                     HStack(alignment: .center) {
@@ -172,14 +171,14 @@ struct BodyTunerBottomView: View {
                 }
             }
         }
-        .background(Color.black.opacity(0.09))
+        .background(Color(hex: "#2C2C2C"))
     }
 }
 
 extension BodyTunerBottomView {
     @ViewBuilder
     func DegreeControlBar() -> some View {
-        VStack(spacing: degreeLabelTopSpacing) {
+        VStack(spacing: 0) {
             HStack(alignment: .center, spacing: 0) {
                 // Invisible balancer to keep slider centered despite right label
                 Color.clear
@@ -203,7 +202,7 @@ extension BodyTunerBottomView {
                     midpointDotDiameter: middleDotSize,
                     midpointDotColor: .white
                 )
-                .frame(width: sliderWidth, height: max(sliderThumbDiameter, 24))
+                .frame(width: sliderWidth, height: sliderThumbDiameter)
                 Color.clear
                     .frame(width: sliderLabelGap, height: 1)
                 Text(viewModel.degreeLabel)
@@ -212,11 +211,13 @@ extension BodyTunerBottomView {
                     .frame(width: degreeLabelWidth, height: degreeLabelHeight, alignment: .leading)
             }
             .frame(maxWidth: .infinity)
+            Color.clear
+                    .frame(height: degreeControlBarBottomSpacing)
         }
     }
     @ViewBuilder
     func AutoCleavageSliderBar() -> some View {
-        VStack(spacing: degreeLabelTopSpacing) {
+        VStack(spacing:0) {
             HStack(alignment: .center, spacing: 0) {
                 Spacer()
                 LevelSlider(viewModel: cleavageSliderVM)
@@ -239,6 +240,7 @@ extension BodyTunerBottomView {
                     }
                 Spacer()
             }
+            .frame(height: cleavageSliderBarHeight)
             .frame(maxWidth: .infinity)
         }
     }
@@ -246,7 +248,7 @@ extension BodyTunerBottomView {
     func SmootherControlBar() -> some View {
         let premiumBadgeWidth = GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 20 : 21).wrappedValue
         let premiumBadgeHeight = GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 9 : 9).wrappedValue
-        VStack(spacing: degreeLabelTopSpacing) {
+        VStack(spacing:0) {
             HStack(alignment: .center, spacing: 0) {
                 ZStack(alignment: .topTrailing) {
                     PillSegmentedControl(
@@ -285,7 +287,7 @@ extension BodyTunerBottomView {
                     midpointDotDiameter: 0,
                     midpointDotColor: .clear
                 )
-                .frame(width: smootherSliderWidth, height: max(sliderThumbDiameter, 24))
+                .frame(width: smootherSliderWidth, height: sliderThumbDiameter)
                 Color.clear
                     .frame(width: sliderLabelGap, height: 1)
                 Text(viewModel.degreeLabel)
@@ -293,6 +295,7 @@ extension BodyTunerBottomView {
                     .font(.system(size: degreeLabelHeight, weight: .medium))
                     .frame(width: degreeLabelWidth, height: degreeLabelHeight, alignment: .leading)
             }
+            .frame(height: smootherControlBarHeight)
             .padding(.horizontal, smootherPadding)
             .frame(maxWidth: .infinity)
         }
@@ -409,4 +412,8 @@ extension BodyTunerBottomView {
             delegate?.onLevelSliderChanged(value: value)
         }
     }
+}
+
+#Preview {
+    BodyTunerDemo()
 }

@@ -11,7 +11,7 @@ import SwiftUI
 struct SwiftUIComponentsLabApp: App {
     var body: some Scene {
         WindowGroup {
-            BodyTunerBottomView()
+            BodyTunerDemo()
         }
     }
 }

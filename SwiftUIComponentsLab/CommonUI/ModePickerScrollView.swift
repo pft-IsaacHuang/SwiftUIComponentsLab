@@ -28,17 +28,19 @@ struct ModePickerScrollConfig {
     var bottomSpacing: CGFloat
     var underlineCornerRadius: CGFloat
     var titleFontSize: CGFloat
+    var backgroundColor: Color
     
     static var `default`: ModePickerScrollConfig {
         ModePickerScrollConfig(
-            contentSpacing: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 0 : 1.76).wrappedValue,
-            itemHeight: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 73 : 58).wrappedValue,
-            itemWidth: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 72 : 55).wrappedValue,
+            contentSpacing: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 18 : 8).wrappedValue,
+            itemHeight: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 61 : 58).wrappedValue,
+            itemWidth: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 60 : 55).wrappedValue,
             underlineColor: Color(red: 23/255.0, green: 255/255.0, blue: 193/255.0),
-            underlineHeight: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 1 : 2).wrappedValue,
-            bottomSpacing: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 7 : 5).wrappedValue,
+            underlineHeight: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 1 : 1).wrappedValue,
+            bottomSpacing: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 9 : 7).wrappedValue,
             underlineCornerRadius: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 0.5 : 1).wrappedValue,
-            titleFontSize: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 9 : 9).wrappedValue
+            titleFontSize: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 9 : 9).wrappedValue,
+            backgroundColor: Color(red: 23 / 255, green: 23 / 255, blue: 23 / 255, opacity: 1.0)
         )
     }
 }
@@ -96,6 +98,7 @@ struct ModePickerScrollView: View {
             }
             .frame(width: UIScreen.main.bounds.width, height: config.itemHeight + config.bottomSpacing)
             .fixedSize(horizontal: false, vertical: true)
+            .background(config.backgroundColor)
             .environment(\.layoutDirection, .leftToRight)
             .onChange(of: selectedIndex) { _ in
                 // programmatic change should auto-center
@@ -122,6 +125,13 @@ struct ModePickerScrollView: View {
 }
 
 private struct ModePickerScrollCell: View {
+
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 16 : 10) var premiumBadgeOffsetX: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 0 : -3) var premiumBadgeOffsetY: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 6 : 6) var newBadgeOffsetX: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? -4 : -2) var newBadgeOffsetY: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 12 : 11) var newBadgeWidth: CGFloat
+
     let item: ModePickerScrollItem
     let width: CGFloat
     let height: CGFloat
@@ -135,18 +145,17 @@ private struct ModePickerScrollCell: View {
                     .scaledToFit()
                     .foregroundColor(.white)
                     .frame(width: width * 0.7, height: width * 0.7)
-                PremiumBadgeView(badge: item.premiumBadge)
-                    .frame(width: width * 0.35, height: width * 0.12)
-                    .offset(x: 0, y: -2)
+                if !item.isNew {
+                    PremiumBadgeView(badge: item.premiumBadge)
+                        .frame(width: width * 0.40, height: width * 0.20)
+                        .offset(x: premiumBadgeOffsetX, y: premiumBadgeOffsetY)
+                }
                 if item.isNew {
-                    Text("NEW")
-                        .font(.system(size: titleFontSize * 0.9, weight: .semibold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 2)
-                        .background(Color.red)
-                        .cornerRadius(3)
-                        .offset(x: 6, y: -4)
+                    Image("ico_new", bundle: nil)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: newBadgeWidth)
+                        .offset(x: newBadgeOffsetX, y: newBadgeOffsetY)
                 }
                 
                 if item.isApplied {
