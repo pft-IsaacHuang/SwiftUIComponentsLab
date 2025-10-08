@@ -34,6 +34,7 @@ struct LabeledToggleStyle: ToggleStyle {
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 18 : 20) var height: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 13 : 13) var cornerRadius: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 1 : 1) var circlePadding: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 8 : 8) var fontSize: CGFloat
     
     func makeBody(configuration: Configuration) -> some View {
         HStack {
@@ -46,16 +47,16 @@ struct LabeledToggleStyle: ToggleStyle {
                         HStack(spacing: 0) {
                             if configuration.isOn {
                                 Text("ON")
-                                    .font(.system(size: 10, weight: .regular))
+                                    .font(.system(size: fontSize, weight: .regular))
                                     .foregroundStyle(Color.white)
-                                    .padding(.leading, height * 0.28)
+                                    .padding(.leading, height * 0.3)
                                 Spacer(minLength: 0)
                             } else {
                                 Spacer(minLength: 0)
                                 Text("OFF")
-                                    .font(.system(size: 10, weight: .regular))
-                                    .foregroundStyle(Color.black.opacity(0.85))
-                                    .padding(.trailing, height * 0.28)
+                                    .font(.system(size: fontSize, weight: .regular))
+                                    .foregroundStyle(Color.white)
+                                    .padding(.trailing, height * 0.22)
                             }
                         }
                         // Thumb above label

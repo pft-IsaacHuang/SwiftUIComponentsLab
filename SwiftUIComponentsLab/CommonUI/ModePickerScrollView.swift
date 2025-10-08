@@ -50,6 +50,7 @@ struct ModePickerScrollView: View {
     @Binding var selectedIndex: Int
     var onSelect: (Int) -> Void
     var config: ModePickerScrollConfig = .default
+    var selectIndexOnTapImmediately: Bool = false
     
     @State private var buttonFrames: [Int: CGRect] = [:]
     @State private var isUserTap: Bool = false
@@ -64,8 +65,10 @@ struct ModePickerScrollView: View {
                                 ModePickerScrollCell(item: item, width: config.itemWidth, height: config.itemHeight, titleFontSize: config.titleFontSize)
                                     .onTapGesture {
                                         isUserTap = true
-                                        withAnimation(.linear(duration: 0.15)) {
-                                            selectedIndex = item.id
+                                        if selectIndexOnTapImmediately {
+                                            withAnimation(.linear(duration: 0.15)) {
+                                                selectedIndex = item.id
+                                            }
                                         }
                                         onSelect(item.id)
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -73,7 +76,10 @@ struct ModePickerScrollView: View {
                                         }
                                     }
                                     .id(item.id)
+                                    .accessibilityElement(children: .combine)
+                                    .accessibilityLabel(item.title)
                                     .accessibilityIdentifier(item.accessibilityId ?? "mode_\(item.id)")
+                                    .accessibilityAddTraits(item.id == selectedIndex ? .isSelected : [])
                             }
                         }
                         .coordinateSpace(name: "modePickerArea")
@@ -117,6 +123,7 @@ struct ModePickerScrollView: View {
         .onPreferenceChange(ButtonFramePreferenceKey.self) { value in
             self.buttonFrames = value
         }
+        .accessibilityIdentifier("modePickerView")
     }
     
     private func updateFrames(in geo: GeometryProxy) {
@@ -183,3 +190,4 @@ private struct ModePickerScrollCell: View {
         )
     }
 }
+

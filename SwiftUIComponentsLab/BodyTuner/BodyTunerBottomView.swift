@@ -43,7 +43,7 @@ struct BodyTunerBottomView: View {
     var body: some View {
         ZStack {
             Color.clear
-            VStack(alignment: .trailing, spacing: 0) {
+            VStack(alignment: .center, spacing: 0) {
                 Spacer()
                 if viewModel.showSmootherBar {
                     SmootherControlBar().disabled(viewModel.interactionDisabled)
@@ -101,7 +101,8 @@ struct BodyTunerBottomView: View {
                     onSelect: { index in
                         viewModel.delegate?.onTabSelected(index: index)
                     },
-                    config: .default
+                    config: .default,
+                    selectIndexOnTapImmediately: false
                 )
                 .allowsHitTesting(!viewModel.isDegreeDragging || !viewModel.interactionDisabled)
                 // Button group (cancel | [undo, redo, bodySwitcher] | confirm)
@@ -118,7 +119,7 @@ struct BodyTunerBottomView: View {
                         switch type {
                         case .undo: return !viewModel.undoEnabled
                         case .redo: return !viewModel.redoEnabled
-                        case .confirm: return !viewModel.doneEnabled
+                        case .confirm: return !(viewModel.doneEnabled || viewModel.didApplyManual)
                         default: return false
                         }
                     },
@@ -203,6 +204,7 @@ extension BodyTunerBottomView {
                     midpointDotColor: .white
                 )
                 .frame(width: sliderWidth, height: sliderThumbDiameter)
+                .accessibilityIdentifier("degreeControlSlider")
                 Color.clear
                     .frame(width: sliderLabelGap, height: 1)
                 Text(viewModel.degreeLabel)
@@ -238,6 +240,7 @@ extension BodyTunerBottomView {
                             cleavageSliderVM.isEnabled = newVal
                         }
                     }
+                    .accessibilityIdentifier("AutoCleavageLevelSlider")
                 Spacer()
             }
             .frame(height: cleavageSliderBarHeight)
@@ -288,6 +291,7 @@ extension BodyTunerBottomView {
                     midpointDotColor: .clear
                 )
                 .frame(width: smootherSliderWidth, height: sliderThumbDiameter)
+                .accessibilityIdentifier("degreeControlSlider")
                 Color.clear
                     .frame(width: sliderLabelGap, height: 1)
                 Text(viewModel.degreeLabel)
@@ -296,8 +300,8 @@ extension BodyTunerBottomView {
                     .frame(width: degreeLabelWidth, height: degreeLabelHeight, alignment: .leading)
             }
             .frame(height: smootherControlBarHeight)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, smootherPadding)
-            .frame(maxWidth: .infinity)
         }
     }
     
@@ -368,6 +372,7 @@ extension BodyTunerBottomView {
         @Published var bodySwitcherVisible: Bool = false
         @Published var bodySwitcherHintVisible: Bool = false
         @Published var manualVisible: Bool = true
+        @Published var didApplyManual: Bool = false
         // Background Protect
         @Published var backgroundProtectOn: Bool = false
         // Protect Head

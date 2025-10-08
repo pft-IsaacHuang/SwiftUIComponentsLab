@@ -3,7 +3,7 @@ import Foundation
 @objc public enum SmootherChannel: Int { case body, face }
 
 enum BodyTunerFeature: Int, CaseIterable {
-    case AutoBelly, Enhance, Waist, AutoSmoother, AutoWaist, AutoArm, AutoShoulder, AutoNeck, AutoChest, AutoCleavage, AutoLeg, AutoWidth, AutoHip 
+    case  AutoBelly, AutoSmoother,  Enhance, Waist, AutoWaist, AutoArm, AutoShoulder, AutoNeck, AutoChest, AutoCleavage, AutoLeg, AutoWidth, AutoHip 
 
     func description() -> String {
         switch self {
