@@ -29,6 +29,7 @@ struct ModePickerScrollConfig {
     var underlineCornerRadius: CGFloat
     var titleFontSize: CGFloat
     var backgroundColor: Color
+    var sidePadding: CGFloat = 0
     
     static var `default`: ModePickerScrollConfig {
         ModePickerScrollConfig(
@@ -40,7 +41,8 @@ struct ModePickerScrollConfig {
             bottomSpacing: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 9 : 7).wrappedValue,
             underlineCornerRadius: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 0.5 : 1).wrappedValue,
             titleFontSize: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 9 : 9).wrappedValue,
-            backgroundColor: Color(red: 23 / 255, green: 23 / 255, blue: 23 / 255, opacity: 1.0)
+            backgroundColor: Color(red: 23 / 255, green: 23 / 255, blue: 23 / 255, opacity: 1.0),
+            sidePadding: GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 16 : 8).wrappedValue
         )
     }
 }
@@ -82,6 +84,7 @@ struct ModePickerScrollView: View {
                                     .accessibilityAddTraits(item.id == selectedIndex ? .isSelected : [])
                             }
                         }
+                        .padding(.trailing, config.sidePadding)
                         .coordinateSpace(name: "modePickerArea")
                         .overlay(alignment: .bottomLeading) {
                             if let frame = buttonFrames[selectedIndex] {

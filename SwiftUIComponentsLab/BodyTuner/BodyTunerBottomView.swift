@@ -193,7 +193,6 @@ extension BodyTunerBottomView {
                     thumbDiameter: sliderThumbDiameter,
                     unfilledTrackColor: LinearGradient(colors: [.white], startPoint: .leading, endPoint: .trailing),
                     enableSnappingMiddle: viewModel.showMiddleDot,
-                    snappingThresholdPercentage: 0.05,
                     onBegin: { _ in viewModel.onDegreeBegin() },
                     onChanged: { val in viewModel.onDegreeChange(val) },
                     onEnded: { val in viewModel.onDegreeEnd(val) },

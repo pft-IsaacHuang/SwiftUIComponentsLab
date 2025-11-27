@@ -46,14 +46,14 @@ struct LabeledToggleStyle: ToggleStyle {
                         // ON/OFF label positioned to avoid the thumb
                         HStack(spacing: 0) {
                             if configuration.isOn {
-                                Text("ON")
+                                Text(verbatim: "ON")
                                     .font(.system(size: fontSize, weight: .regular))
                                     .foregroundStyle(Color.white)
                                     .padding(.leading, height * 0.3)
                                 Spacer(minLength: 0)
                             } else {
                                 Spacer(minLength: 0)
-                                Text("OFF")
+                                Text(verbatim: "OFF")
                                     .font(.system(size: fontSize, weight: .regular))
                                     .foregroundStyle(Color.white)
                                     .padding(.trailing, height * 0.22)
