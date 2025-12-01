@@ -80,9 +80,9 @@ struct RetouchWrinklesView: View {
         }
     }
     
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 62 : 56) var sliderAutoLeadingPadding: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 82 : 34) var sliderAutoTrailingPadding: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 6 : 6) var sliderAutoBottomPadding: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 85 : 56) var sliderAutoLeadingPadding: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 85 : 34) var sliderAutoTrailingPadding: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 4 : 6) var sliderAutoBottomPadding: CGFloat
 
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 12 : 12) var sliderManualHorizontalPadding: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 51 : 24) var sliderManualLeadingPadding: CGFloat
@@ -126,8 +126,8 @@ struct RetouchWrinklesView: View {
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 24 : 24) var autoModeSelectorDividerHeight: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 3 : 3) var autoModeSelectorDividerCornerRadius: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 6 : 6) var autoModeSelectorDividerCellWidth: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 58 : 58) var autoModeSelectorDividerCellHeight: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 6 : 6) var autoModeCellSpacing: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 61 : 58) var autoModeSelectorDividerCellHeight: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 24 : 6) var autoModeCellSpacing: CGFloat
     
     @ViewBuilder
     func AutoModeSelector() -> some View {
@@ -135,6 +135,10 @@ struct RetouchWrinklesView: View {
             ForEach(Array(self.viewModel.autoModeList.enumerated()), id: \.element) { index, type in
                 Button(action: {
                     self.viewModel.selectedAutoMode = type
+                    // Trigger slider value on ended to trigger process image when select all mode
+                    if self.viewModel.selectedAutoMode == .all {
+                        self.viewModel.sliderValueOnEnded(value: CGFloat(self.viewModel.sliderValue))
+                    }
                 }) {
                     SelectorCell(type: type)
                 }
@@ -158,14 +162,14 @@ struct RetouchWrinklesView: View {
         .padding(.horizontal, self.autoModeSelectorHorizontalPadding)        
     }
     
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 58 : 58) var autoModeCellHeight: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 70 : 70) var autoModeCellWidth: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 52 : 52) var autoModeAllCellWidth: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 61 : 58) var autoModeCellHeight: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 82 : 70) var autoModeCellWidth: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 66 : 52) var autoModeAllCellWidth: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 40 : 40) var autoModeIconSize: CGFloat
     @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 4 : 4) var autoModeLabelBottomPadding: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 11 : 12) var autoModeLabelFontSize: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 2 : 2) var autoModeCellUnderlineHeight: CGFloat
-    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 50 : 50) var autoModeCellUnderlineWidth: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 11 : 11) var autoModeLabelFontSize: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 1 : 2) var autoModeCellUnderlineHeight: CGFloat
+    @GuidelinePixelValueConvertor(wrappedValue: IS_IPAD ? 66 : 50) var autoModeCellUnderlineWidth: CGFloat
     
     @ViewBuilder
     func SelectorCell(type: WrinkleAutoType) -> some View {
